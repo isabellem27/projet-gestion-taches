@@ -1,0 +1,34 @@
+services:
+  web:
+    image: taskmanager           # ton image PHP/Apache déjà construite
+    container_name: app          # nom fixe du conteneur
+    ports:
+      - "8080:80"                # accès à l'application via localhost:8080
+    volumes:
+      - ./:/var/www/html/        # monte ton projet dans le conteneur
+    depends_on:
+      - db                       # attend que le conteneur db soit lancé
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_NAME=taskmanager
+      - DB_PORT=3306
+    networks:
+      - projet_network            # réseau dédié pour DNS interne
+
+  db:
+    image: mysql:8.0
+    container_name: db           # nom fixe du conteneur
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=taskmanager
+    volumes:
+      - ./sql/:/docker-entrypoint-initdb.d/   # <-- exécution automatique
+#- ./sql/:/var/lib/mysql    # persistance de la base
+    networks:
+      - projet_network            # même réseau que web
+
+networks:
+  projet_network:
+    driver: bridge
